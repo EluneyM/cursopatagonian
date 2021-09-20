@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, TouchableOpacity, View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DefaultButton, Header, Separator, Typography } from '../../components';
 import styles from './styles';
@@ -9,19 +10,28 @@ import { goToScreen } from '../../navigation/controls';
 import { colors } from '../../utils/theme';
 import useBooksData from './hooks/useBooksData';
 
-const goToBooksScreen = () => {
-  goToScreen('Books');
-};
-
-const ListItem = ({ id, title }: { id: number; title: string }) => (
+const ListItem = ({
+  id,
+  title,
+  bookCovers,
+}: {
+  id: number;
+  title: string;
+  bookCovers: Array<Cover>;
+}) => (
   <TouchableOpacity
     onPress={() => goToScreen('BookDetails', { id, title })}
     style={styles.listItemContainerShadow}
   >
     <View style={styles.listItemContainer}>
+      <View style={{ width: '100%' }}>
+        <Image resizeMode="cover" source={{ uri: bookCovers[0].URL }} style={styles.image} />
+      </View>
+      <Separator size={10} />
       <Typography numberOfLines={2} align="center">
         {title}
       </Typography>
+      <Separator size={10} />
     </View>
   </TouchableOpacity>
 );
@@ -29,10 +39,10 @@ const ListItem = ({ id, title }: { id: number; title: string }) => (
 const flatlistKeyExtractor = (item: Book) => `${item.id}`;
 
 const renderFlatlistItem = ({ item }: { item: Book }) => (
-  <ListItem id={item.id} title={item.title} />
+  <ListItem id={item.id} title={item.title} bookCovers={item.book_covers} />
 );
 
-const HomeScreen = () => {
+const BooksScreen = () => {
   const [refreshFlag, setRefreshFlag] = useState<boolean>(false);
   const { books, loading, errorOccurred } = useBooksData(refreshFlag);
 
@@ -53,7 +63,7 @@ const HomeScreen = () => {
   if (loading) {
     return (
       <>
-        <Header showBackButton={false} title="Home Screen" />
+        <Header showBackButton={false} title="HP" />
         <View style={styles.wholeScreenCenter}>
           <ActivityIndicator size="large" color={colors.mainOrange} />
         </View>
@@ -73,12 +83,22 @@ const HomeScreen = () => {
 
   return (
     <>
-      <Header showBackButton={false} title="Home Screen" />
+      <View style={styles.header}>
+        <View style={styles.backgroundContainer}>
+          <Image style={styles.backdrop} resizeMode="cover" source={require('../../assets/images/header.png')} />
+        </View>
+        <View style={styles.overlay}>
+          <Image style={styles.logo} source={require('../../assets/images/headertitle.png')} />
+        </View>
+      </View>
       <View style={styles.mainContainer}>
-        <Separator size={20} />
-        <DefaultButton text="Go To Books Screen" onPress={goToBooksScreen} />
+        {/* <DefaultButton text="Go To Experimental Screen" onPress={goToExperimentalScreen} /> */}
+        <Typography color={colors.brown} align="center" size={30} variant="bold">
+          BOOKS
+        </Typography>
         <Separator size={20} />
         <FlatList
+          numColumns={2}
           keyExtractor={flatlistKeyExtractor}
           refreshing={loading}
           onRefresh={toggleRefreshFlag}
@@ -93,4 +113,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default BooksScreen;
